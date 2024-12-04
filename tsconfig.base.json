@@ -13,8 +13,13 @@
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "esModuleInterop": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@org/auth/*": ["apps/auth/src/*"],
+      "@org/errors": ["libs/errors/src/index.ts"]
+    },
+    "strict": true
   },
   "exclude": ["node_modules", "tmp"]
 }

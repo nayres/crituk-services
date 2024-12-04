@@ -35,7 +35,14 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/showTell-e2e/**/*"]
+      "exclude": []
     }
-  ]
+  ],
+  "targetDefaults": {
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    }
+  }
 }
