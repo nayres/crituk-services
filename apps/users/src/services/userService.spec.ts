@@ -52,9 +52,10 @@ describe("UserService", () => {
     mockUserRepository.create = mockCreate;
     mockUserRepository.updateOne = mockUpdateOne;
     mockUserRepository.uploadProfileImage = mockUploadProfileImage;
+    mockUserRepository.deleteProfileImage = mockDeleteProfileImage;
 
     userService = new UserService(mockUserRepository);
-
+    userService.deleteProfileImage = mockDeleteProfileImage;
     jest.clearAllMocks();
   });
 
@@ -595,7 +596,6 @@ describe("UserService", () => {
       mockDeleteProfileImage.mockResolvedValue("Success");
 
       await userService.deleteProfileImage(profileImageKey);
-
       expect(userService.deleteProfileImage).toHaveBeenCalledWith(
         profileImageKey
       );
@@ -606,8 +606,9 @@ describe("UserService", () => {
         new Error("Error deleting image")
       );
 
-      await userService.deleteProfileImage("profile-image/uuid-123.jpg");
-      await expect(mockDeleteProfileImage).rejects.toThrow(
+      await expect(
+        userService.deleteProfileImage("profile-image/uuid-123.jpg")
+      ).rejects.toThrow(
         new CritukError(
           "Error deleting image",
           ErrorCodes.AWS.UNEXPECTED_ERROR,
