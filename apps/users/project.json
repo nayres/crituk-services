@@ -21,6 +21,15 @@
           "buildTarget": "users:build:production"
         }
       }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "apps/users/jest.config.ts",
+        "passWithNoTests": true,
+        "codeCoverage": true,
+        "coverageReporters": ["html", "text", "lcov"]
+      }
     }
   }
 }
