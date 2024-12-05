@@ -242,11 +242,15 @@ export class UserService {
     try {
       await this.userRepository.deleteProfileImage(profileImageKey);
     } catch (error) {
-      throw new CritukError(
-        "An unexpected error occurred while deleting profile image.",
-        ErrorCodes.AWS.UNEXPECTED_ERROR,
-        500
-      );
+      if (!(error instanceof CritukError)) {
+        throw new CritukError(
+          "An unexpected error occurred while creating account.",
+          ErrorCodes.SERVICE.UNEXPECTED_ERROR,
+          500
+        );
+      }
+
+      throw error;
     }
   };
 }

@@ -20,9 +20,9 @@ export class UserRepository {
   docClient: DynamoDBDocumentClient;
   s3Client: S3Client;
 
-  constructor() {
-    this.docClient = DynamoDBDocumentClient.from(dynamoClient);
-    this.s3Client = s3Client;
+  constructor(docClient?: DynamoDBDocumentClient, S3Client?: S3Client) {
+    this.docClient = docClient || DynamoDBDocumentClient.from(dynamoClient);
+    this.s3Client = S3Client || s3Client;
   }
 
   listAll = async () => {
