@@ -12,38 +12,16 @@ export class UserService {
     this.userRepository = userRepository;
   }
 
-  private async checkUserExists(email: string, username: string) {
-    const existingEmail = await this.userRepository.findOneBy({
-      keyConditionExpression: "email = :email",
-      expressionAttributeValues: { ":email": email },
-      indexName: "email-index",
-    });
-
-    if (existingEmail.Items?.length) {
-      throw new CritukError(
-        `User already exists. Email: ${email}`,
-        ErrorCodes.SERVICE.EMAIL_EXISTS,
-        409
-      );
-    }
-
-    const existingUsername = await this.userRepository.findOneBy({
-      keyConditionExpression: "username = :username",
-      expressionAttributeValues: { ":username": username },
-      indexName: "username-index",
-    });
-
-    if (existingUsername.Items?.length) {
-      throw new CritukError(
-        `User already exists. Username: ${username}`,
-        ErrorCodes.SERVICE.USERNAME_EXISTS,
-        409
-      );
-    }
-  }
-
   listUsers = async () => {
-    return await this.userRepository.listAll();
+    try {
+      return await this.userRepository.listAll();
+    } catch (error) {
+      throw new CritukError(
+        `An unexpected error occurred while fetching account.`,
+        ErrorCodes.SERVICE.UNEXPECTED_ERROR,
+        500
+      );
+    }
   };
 
   getUserById = async (userId: string) => {
@@ -62,16 +40,16 @@ export class UserService {
       }
 
       return user?.Items ? user.Items[0] : null;
-    } catch (error) {
-      if (error instanceof CritukError) {
-        throw error;
+    } catch (error: any) {
+      if (!(error instanceof CritukError)) {
+        throw new CritukError(
+          `An unexpected error occurred while fetching account.`,
+          ErrorCodes.SERVICE.UNEXPECTED_ERROR,
+          500
+        );
       }
 
-      throw new CritukError(
-        `An unexpected error occurred while fetching account.`,
-        ErrorCodes.SERVICE.UNEXPECTED_ERROR,
-        500
-      );
+      throw error;
     }
   };
 
@@ -86,22 +64,22 @@ export class UserService {
       if (!user.Items?.length) {
         throw new CritukError(
           `User does not exist. Email: ${email}.`,
-          ErrorCodes.SERVICE.USERNAME_NOT_EXIST,
+          ErrorCodes.SERVICE.NOT_FOUND,
           404
         );
       }
 
       return user?.Items ? user.Items[0] : null;
     } catch (error) {
-      if (error instanceof CritukError) {
-        throw error;
+      if (!(error instanceof CritukError)) {
+        throw new CritukError(
+          `An unexpected error occurred while fetching account.`,
+          ErrorCodes.SERVICE.UNEXPECTED_ERROR,
+          500
+        );
       }
 
-      throw new CritukError(
-        `An unexpected error occurred while fetching the user.`,
-        ErrorCodes.SERVICE.UNEXPECTED_ERROR,
-        500
-      );
+      throw error;
     }
   };
 
@@ -123,15 +101,15 @@ export class UserService {
 
       return user?.Items ? user.Items[0] : null;
     } catch (error) {
-      if (error instanceof CritukError) {
-        throw error;
+      if (!(error instanceof CritukError)) {
+        throw new CritukError(
+          `An unexpected error occurred while fetching account.`,
+          ErrorCodes.SERVICE.UNEXPECTED_ERROR,
+          500
+        );
       }
 
-      throw new CritukError(
-        `An unexpected error occurred while fetching the user.`,
-        ErrorCodes.SERVICE.UNEXPECTED_ERROR,
-        500
-      );
+      throw error;
     }
   };
 
@@ -141,7 +119,7 @@ export class UserService {
 
       if (!user) {
         throw new CritukError(
-          `User does not exist and cannot be deleted.`,
+          "User does not exist and cannot be deleted.",
           ErrorCodes.SERVICE.NOT_FOUND,
           404
         );
@@ -155,21 +133,47 @@ export class UserService {
 
       return await this.userRepository.deleteOne(id);
     } catch (error) {
-      if (error instanceof CritukError) {
-        throw error;
+      if (!(error instanceof CritukError)) {
+        throw new CritukError(
+          "An unexpected error occurred while deleting account.",
+          ErrorCodes.SERVICE.UNEXPECTED_ERROR,
+          500
+        );
       }
 
-      throw new CritukError(
-        `An unexpected error occurred while deleting account.`,
-        ErrorCodes.SERVICE.UNEXPECTED_ERROR,
-        500
-      );
+      throw error;
     }
   };
 
   createUser = async (user: CreateUserInput) => {
     try {
-      await this.checkUserExists(user.email, user.username);
+      const userWithExistingEmail = await this.userRepository.findOneBy({
+        keyConditionExpression: "email = :email",
+        expressionAttributeValues: { ":email": user.email },
+        indexName: "email-index",
+      });
+
+      if (userWithExistingEmail.Items?.length) {
+        throw new CritukError(
+          `User already exists. Email: ${user.email}`,
+          ErrorCodes.SERVICE.EMAIL_EXISTS,
+          409
+        );
+      }
+
+      const userWithExistingUsername = await this.userRepository.findOneBy({
+        keyConditionExpression: "username = :username",
+        expressionAttributeValues: { ":username": user.username },
+        indexName: "username-index",
+      });
+
+      if (userWithExistingUsername.Items?.length) {
+        throw new CritukError(
+          `User already exists. Username: ${user.username}`,
+          ErrorCodes.SERVICE.USERNAME_EXISTS,
+          409
+        );
+      }
 
       const newUser: IUser = {
         ...user,
@@ -186,16 +190,16 @@ export class UserService {
       await this.userRepository.create(newUser);
 
       return omitKeys(newUser, "password");
-    } catch (error) {
-      if (error instanceof CritukError) {
-        throw error;
+    } catch (error: any) {
+      if (!(error instanceof CritukError)) {
+        throw new CritukError(
+          "An unexpected error occurred while creating account.",
+          ErrorCodes.SERVICE.UNEXPECTED_ERROR,
+          500
+        );
       }
 
-      throw new CritukError(
-        `An unexpected error occurred while deleting account.`,
-        ErrorCodes.SERVICE.UNEXPECTED_ERROR,
-        500
-      );
+      throw error;
     }
   };
 
@@ -207,7 +211,7 @@ export class UserService {
       });
     } catch (error) {
       throw new CritukError(
-        `An unexpected error occurred while updating account.`,
+        "An unexpected error occurred while updating account.",
         ErrorCodes.SERVICE.UNEXPECTED_ERROR,
         500
       );
@@ -227,7 +231,7 @@ export class UserService {
       return imagePath;
     } catch (error) {
       throw new CritukError(
-        `An unexpected error occurred while uploading profile image.`,
+        "An unexpected error occurred while uploading profile image.",
         ErrorCodes.AWS.UNEXPECTED_ERROR,
         500
       );
@@ -236,10 +240,10 @@ export class UserService {
 
   deleteProfileImage = async (profileImageKey: string) => {
     try {
-      return await this.userRepository.deleteProfileImage(profileImageKey);
+      await this.userRepository.deleteProfileImage(profileImageKey);
     } catch (error) {
       throw new CritukError(
-        `An unexpected error occurred while deleting profile image.`,
+        "An unexpected error occurred while deleting profile image.",
         ErrorCodes.AWS.UNEXPECTED_ERROR,
         500
       );
