@@ -6,7 +6,7 @@ import { CritukError, ErrorCodes } from "@org/errors";
 export class AuthMiddleware {
   authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const authHeader = req.headers.authorization;
+      const authHeader = req.headers?.authorization;
 
       if (!authHeader) {
         return res

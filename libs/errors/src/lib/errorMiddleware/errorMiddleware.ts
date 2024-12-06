@@ -1,6 +1,5 @@
 import { Response, NextFunction } from "express";
 import { CritukError } from "../critukError";
-import { ErrorCodes } from "../errorCodes";
 
 export const errorMiddleware = (
   err: CritukError,
@@ -8,19 +7,6 @@ export const errorMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  // handle upload image errors
-  if (err.code === "LIMIT_FILE_SIZE") {
-    return res
-      .status(413)
-      .json(
-        new CritukError(
-          "File size exceeds the limit of 5MB",
-          ErrorCodes.VALIDATION.INVALID_FORMAT,
-          413
-        )
-      );
-  }
-
   if (err instanceof CritukError) {
     return res
       .status(err.statusCode)

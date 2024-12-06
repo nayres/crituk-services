@@ -1,7 +1,6 @@
-import { UserController } from "./UserController";
-import { UserService } from "../services";
-import { Request, Response, NextFunction } from "express";
-import { DeleteCommandOutput } from "@aws-sdk/lib-dynamodb";
+import { UserController } from "../UserController";
+import { UserService } from "../../services";
+import { Request, Response } from "express";
 import { CritukError, ErrorCodes } from "@org/errors";
 
 describe("UserController", () => {

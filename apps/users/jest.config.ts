@@ -6,4 +6,5 @@ export default {
     "^.+\\.[tj]s$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.spec.json" }],
   },
   moduleFileExtensions: ["ts", "js", "html"],
+  testMatch: ["**/__tests__/**/*.ts?(x)"],
 };
