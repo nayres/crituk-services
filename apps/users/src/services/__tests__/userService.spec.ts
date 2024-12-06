@@ -1,18 +1,18 @@
-import { UserService } from "./userService";
-import { UserRepository } from "../repositories";
+import { UserService } from "../userService";
+import { UserRepository } from "../../repositories";
 import { CritukError, ErrorCodes } from "@org/errors";
 import { v4 as uuidv4 } from "uuid";
-import { getCurrentISODate, omitKeys } from "../utils";
+import { getCurrentISODate, omitKeys } from "../../utils";
 
 // Mock the uuid and utils modules
 jest.mock("uuid", () => ({
   v4: jest.fn(),
 }));
-jest.mock("../utils", () => ({
+jest.mock("../../utils", () => ({
   getCurrentISODate: jest.fn(),
   omitKeys: jest.fn(),
 }));
-jest.mock("../repositories", () => {
+jest.mock("../../repositories", () => {
   return {
     UserRepository: jest.fn().mockImplementation(() => ({
       listAll: jest.fn(),

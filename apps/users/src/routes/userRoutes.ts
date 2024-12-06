@@ -4,6 +4,8 @@ import {
   AuthMiddleware,
   validateRequest,
   profileImageUpload,
+  uploadErrorHandler,
+  validateFilePresence,
 } from "../middleware";
 import { userSchema } from "../schema";
 
@@ -30,6 +32,7 @@ router.delete(
 router.patch(
   "/users/account",
   authMiddleware.authenticate,
+  validateFilePresence,
   validateRequest(userSchema),
   userController.updateCurrentUser
 );
@@ -37,7 +40,8 @@ router.put(
   "/users/account/profile-image",
   authMiddleware.authenticate,
   profileImageUpload.single("profileImage"),
-  userController.uploadProfileImage
+  userController.uploadProfileImage,
+  uploadErrorHandler
 );
 
 /* Admin */

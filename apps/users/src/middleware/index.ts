@@ -1,3 +1,7 @@
 export { AuthMiddleware } from "./authMiddleware";
-export { profileImageUpload } from "./profileImageUpload";
+export {
+  profileImageUpload,
+  uploadErrorHandler,
+  validateFilePresence,
+} from "./profileImageUpload";
 export { validateRequest } from "./validateRequest";

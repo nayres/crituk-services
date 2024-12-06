@@ -4,7 +4,7 @@ import {
   DeleteCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { UserRepository } from "./userRepository";
+import { UserRepository } from "../userRepository";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 jest.mock("@aws-sdk/lib-dynamodb");
