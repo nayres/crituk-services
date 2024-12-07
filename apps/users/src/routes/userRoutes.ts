@@ -1,17 +1,21 @@
 import { Router } from "express";
 import { UserController } from "../controllers";
 import {
-  AuthMiddleware,
+  authMiddleware,
   validateRequest,
   profileImageUpload,
   uploadErrorHandler,
   validateFilePresence,
 } from "../middleware";
 import { userSchema } from "../schema";
+import { UserService } from "../services";
+import { dynamoClient, s3Client } from "../utils";
+import { UserRepository } from "../repositories";
 
 const router = Router();
-const userController = new UserController();
-const authMiddleware = new AuthMiddleware();
+const userRepository = new UserRepository(dynamoClient, s3Client);
+const userService = new UserService(userRepository);
+const userController = new UserController(userService);
 
 // /users?email=
 // /users?username=
