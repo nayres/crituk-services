@@ -3,8 +3,8 @@ import { Request, Response, NextFunction } from "express";
 import { apiClient } from "../utils/clients";
 import { CritukError, ErrorCodes } from "@org/errors";
 
-export class AuthMiddleware {
-  authenticate = async (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = {
+  authenticate: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authHeader = req.headers?.authorization;
 
@@ -62,5 +62,5 @@ export class AuthMiddleware {
           )
         );
     }
-  };
-}
+  },
+};

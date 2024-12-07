@@ -1,4 +1,4 @@
-import { AuthMiddleware } from "../authMiddleware";
+import { authMiddleware } from "../authMiddleware";
 import { apiClient } from "../../utils/clients";
 import { CritukError, ErrorCodes } from "@org/errors";
 import MockAdapter from "axios-mock-adapter";
@@ -10,7 +10,6 @@ describe("AuthMiddleware", () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let next: NextFunction;
-  let authMiddleware: AuthMiddleware;
 
   beforeEach(() => {
     req = {
@@ -21,7 +20,6 @@ describe("AuthMiddleware", () => {
       json: jest.fn(),
     };
     next = jest.fn();
-    authMiddleware = new AuthMiddleware();
   });
 
   afterEach(() => {

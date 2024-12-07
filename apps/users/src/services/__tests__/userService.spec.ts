@@ -1,14 +1,14 @@
+import { v4 as uuidv4 } from "uuid";
+import { getCurrentISODate, omitKeys } from "@org/utils";
+import { CritukError, ErrorCodes } from "@org/errors";
 import { UserService } from "../userService";
 import { UserRepository } from "../../repositories";
-import { CritukError, ErrorCodes } from "@org/errors";
-import { v4 as uuidv4 } from "uuid";
-import { getCurrentISODate, omitKeys } from "../../utils";
 
 // Mock the uuid and utils modules
 jest.mock("uuid", () => ({
   v4: jest.fn(),
 }));
-jest.mock("../../utils", () => ({
+jest.mock("@org/utils", () => ({
   getCurrentISODate: jest.fn(),
   omitKeys: jest.fn(),
 }));
@@ -34,8 +34,16 @@ describe("UserService", () => {
   let mockUpdateOne: jest.Mock;
   let mockUploadProfileImage: jest.Mock;
   let mockDeleteProfileImage: jest.Mock;
+  let mockDocClient: any;
+  let mockS3Client: any;
 
   beforeEach(() => {
+    mockDocClient = {
+      send: jest.fn(),
+    };
+    mockS3Client = {
+      send: jest.fn(),
+    };
     mockListAll = jest.fn();
     mockFindOneBy = jest.fn();
     mockDeleteOne = jest.fn();
@@ -44,7 +52,7 @@ describe("UserService", () => {
     mockUploadProfileImage = jest.fn();
     mockDeleteProfileImage = jest.fn();
 
-    const mockUserRepository = new UserRepository();
+    const mockUserRepository = new UserRepository(mockDocClient, mockS3Client);
 
     mockUserRepository.listAll = mockListAll;
     mockUserRepository.findOneBy = mockFindOneBy;

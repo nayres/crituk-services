@@ -19,3 +19,16 @@ export type CreateUserInput = Pick<
   IUser,
   "email" | "username" | "password" | "first_name" | "last_name"
 >;
+
+export interface HttpRequest {
+  body: any;
+  query: any;
+  params: any;
+  user?: { id: string };
+  file?: any;
+}
+
+export interface HttpResponse {
+  status: (code: number) => this;
+  json: (data: any) => void;
+}

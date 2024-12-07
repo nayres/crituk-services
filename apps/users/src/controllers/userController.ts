@@ -1,117 +1,226 @@
-import { Request, Response, NextFunction } from "express";
 import { UserService } from "../services";
-import { CritukError, ErrorCodes } from "@org/errors";
+import { ErrorCodes, handleError } from "@org/errors";
+import { HttpRequest, HttpResponse } from "../types";
 
 export class UserController {
-  userService: UserService;
-  constructor(userService = new UserService()) {
-    this.userService = userService;
-  }
+  constructor(private readonly userService: UserService) {}
 
-  getUser = async (req: Request, res: Response, next: NextFunction) => {
+  private handleResponse = (res: HttpResponse, status: number, data: any) => {
+    return res.status(status).json(data);
+  };
+
+  private ensureAuthenticated = (req: HttpRequest, next: Function) => {
+    if (!req?.user?.id) {
+      throw handleError(
+        "User not authorized",
+        ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,
+        401
+      );
+    }
+    return req.user.id;
+  };
+
+  /**
+   * @description Retrieves queried user's details.
+   * @route GET /users
+   * @access Public (Temp)
+   *
+   * @param {HttpRequest} req - The HTTP request object.
+   * @param {HttpResponse} res - The HTTP response object.
+   * @param {Function} next - The next middleware function.
+   *
+   * @returns {Promise<void>}
+   */
+  getUser = async (req: HttpRequest, res: HttpResponse, next: Function) => {
     try {
       const { email, username } = req.query;
 
       if (email) {
         const user = await this.userService.getUserByEmail(email as string);
-        return res.status(200).json({ status: 200, user: user });
+        return this.handleResponse(res, 200, { status: 200, user });
       }
 
       if (username) {
         const user = await this.userService.getUserByUsername(
           username as string
         );
-        return res.status(200).json({ status: 200, user: user });
+        return this.handleResponse(res, 200, { status: 200, user });
       }
     } catch (error) {
       next(error);
     }
   };
 
-  listUsers = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const users = await this.userService.listUsers();
-      return res.json({ users });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  getCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const user = await this.userService.getUserById(req.user.id);
-      return res.status(200).json({ status: 200, user });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  deleteCurrentUser = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      await this.userService.deleteUser(req.user.id);
-      return res.status(204).json({ status: 204 });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  updateCurrentUser = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      await this.userService.updateUser(req.user.id, req.body);
-      return res.status(201).json({ status: 201 });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  createUser = async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @description Create a new user account.
+   * @route POST /users
+   * @access Public
+   *
+   * @param {HttpRequest} req - The HTTP request object.
+   * @param {HttpResponse} res - The HTTP response object.
+   * @param {Function} next - The next middleware function.
+   *
+   * @returns {Promise<void>}
+   */
+  createUser = async (req: HttpRequest, res: HttpResponse, next: Function) => {
     try {
       const newUser = await this.userService.createUser(req.body);
-      return res.status(201).json({ status: 201, user: newUser });
+      return this.handleResponse(res, 201, { status: 201, user: newUser });
     } catch (error) {
       next(error);
     }
   };
 
-  deleteUserById = async (req: Request, res: Response, next: NextFunction) => {
+  /**
+   * @description Retrieves the authenticated user's details.
+   * @route GET /users/account
+   * @access Private
+   *
+   * @param {HttpRequest} req - The HTTP request object.
+   * @param {HttpResponse} res - The HTTP response object.
+   * @param {Function} next - The next middleware function.
+   *
+   * @returns {Promise<void>}
+   */
+  getCurrentUser = async (
+    req: HttpRequest,
+    res: HttpResponse,
+    next: Function
+  ) => {
     try {
-      const userId = req.params.id;
-      await this.userService.deleteUser(userId);
-      return res.status(204).json({ status: 204 });
+      const userId = this.ensureAuthenticated(req, next);
+      const user = await this.userService.getUserById(userId);
+      return this.handleResponse(res, 200, { status: 200, user });
     } catch (error) {
       next(error);
     }
   };
 
+  /**
+   * @description Delete authenticated user's account.
+   * @route DELETE /users/account
+   * @access Private
+   *
+   * @param {HttpRequest} req - The HTTP request object.
+   * @param {HttpResponse} res - The HTTP response object.
+   * @param {Function} next - The next middleware function.
+   *
+   * @returns {Promise<void>}
+   */
+  deleteCurrentUser = async (
+    req: HttpRequest,
+    res: HttpResponse,
+    next: Function
+  ) => {
+    try {
+      const userId = this.ensureAuthenticated(req, next);
+      await this.userService.deleteUser(userId);
+      return this.handleResponse(res, 204, { status: 204 });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * @description Update authenticated user's account.
+   * @route PATCH /users/account
+   * @access Private
+   *
+   * @param {HttpRequest} req - The HTTP request object.
+   * @param {HttpResponse} res - The HTTP response object.
+   * @param {Function} next - The next middleware function.
+   *
+   * @returns {Promise<void>}
+   */
+  updateCurrentUser = async (
+    req: HttpRequest,
+    res: HttpResponse,
+    next: Function
+  ) => {
+    try {
+      const userId = this.ensureAuthenticated(req, next);
+      await this.userService.updateUser(userId, req.body);
+      return this.handleResponse(res, 201, { status: 201 });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * @description Upload authenticated user's profile image.
+   * @route PUT /users/account/profile-image
+   * @access Private
+   *
+   * @param {HttpRequest} req - The HTTP request object.
+   * @param {HttpResponse} res - The HTTP response object.
+   * @param {Function} next - The next middleware function.
+   *
+   * @returns {Promise<void>}
+   */
   uploadProfileImage = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
+    req: HttpRequest,
+    res: HttpResponse,
+    next: Function
   ) => {
     try {
       if (!req.file) {
-        const error = new CritukError(
-          "No image was provided for uploading a profile image.",
-          ErrorCodes.AWS.SERVICE_ERROR,
-          400
+        return next(
+          handleError(
+            "No image was provided for uploading a profile image.",
+            ErrorCodes.AWS.SERVICE_ERROR,
+            400
+          )
         );
-
-        return next(error);
       }
 
-      await this.userService.uploadProfileImage(req.user.id, req.file);
-      return res.status(200).json({
-        status: 200,
-        message: "Profile image uploaded successfuly.",
-      });
+      const userId = this.ensureAuthenticated(req, next);
+      await this.userService.uploadProfileImage(userId, req.file);
+      return this.handleResponse(res, 200, { status: 200 });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * @description Retrieves a list of all users.
+   * @route GET /users/admin
+   * @access Public (Temp)
+   *
+   * @param {HttpRequest} req - The HTTP request object.
+   * @param {HttpResponse} res - The HTTP response object.
+   * @param {Function} next - The next middleware function.
+   *
+   * @returns {Promise<void>}
+   */
+  listUsers = async (req: HttpRequest, res: HttpResponse, next: Function) => {
+    try {
+      const users = await this.userService.listUsers();
+      return this.handleResponse(res, 200, { status: 200, users });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * @description Delete a specified user's account.
+   * @route DELETE /users/admin/:id
+   * @access Public (Temp)
+   *
+   * @param {HttpRequest} req - The HTTP request object.
+   * @param {HttpResponse} res - The HTTP response object.
+   * @param {Function} next - The next middleware function.
+   *
+   * @returns {Promise<void>}
+   */
+  deleteUserById = async (
+    req: HttpRequest,
+    res: HttpResponse,
+    next: Function
+  ) => {
+    try {
+      const userId = req.params.id;
+      await this.userService.deleteUser(userId);
+      return this.handleResponse(res, 204, { status: 204 });
     } catch (error) {
       next(error);
     }

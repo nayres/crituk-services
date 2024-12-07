@@ -1,1 +1,1 @@
-export { CritukError, ErrorCodes, errorMiddleware } from "./lib";
+export { CritukError, ErrorCodes, errorMiddleware, handleError } from "./lib";

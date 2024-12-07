@@ -18,7 +18,8 @@
     "paths": {
       "@org/auth/*": ["apps/auth/src/*"],
       "@org/errors": ["libs/errors/src/index.ts"],
-      "@org/result": ["libs/result/src/index.ts"]
+      "@org/result": ["libs/result/src/index.ts"],
+      "@org/utils": ["libs/utils/src/index.ts"]
     },
     "strict": true
   },

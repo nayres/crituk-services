@@ -30,11 +30,9 @@ jest.mock("../../controllers", () => {
 });
 jest.mock("../../middleware", () => {
   return {
-    AuthMiddleware: jest.fn().mockImplementation(() => {
-      return {
-        authenticate: jest.fn((req, res, next) => next()),
-      };
-    }),
+    authMiddleware: {
+      authenticate: jest.fn((req, res, next) => next()),
+    },
     validateFilePresence: jest.fn((res, req, next) => next()),
     validateRequest: jest.fn(
       () => (req: Request, res: Response, next: NextFunction) => next()

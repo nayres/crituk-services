@@ -1,4 +1,4 @@
-export { AuthMiddleware } from "./authMiddleware";
+export { authMiddleware } from "./authMiddleware";
 export {
   profileImageUpload,
   uploadErrorHandler,

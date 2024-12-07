@@ -101,7 +101,10 @@ describe("UserController", () => {
       );
 
       expect(mockUserService.listUsers).toHaveBeenCalled();
-      expect(mockRes.json).toHaveBeenCalledWith({ users: mockUsers });
+      expect(mockRes.json).toHaveBeenCalledWith({
+        status: 200,
+        users: mockUsers,
+      });
     });
 
     it("should call next with an error if one occurs", async () => {
@@ -156,6 +159,25 @@ describe("UserController", () => {
       expect(mockRes.status).not.toHaveBeenCalled();
       expect(mockRes.json).not.toHaveBeenCalled();
     });
+
+    it("should throw 401 if user isn't present in the request object", async () => {
+      mockReq = {};
+
+      await userController.getCurrentUser(
+        mockReq as Request,
+        mockRes as Response,
+        mockNext
+      );
+
+      expect(mockUserService.getUserById).not.toHaveBeenCalled();
+      expect(mockNext).toHaveBeenCalledWith(
+        new CritukError(
+          "User not authorized",
+          ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,
+          401
+        )
+      );
+    });
   });
 
   describe("DeleteCurrentUser", () => {
@@ -195,6 +217,25 @@ describe("UserController", () => {
       expect(mockNext).toHaveBeenCalledWith(error);
       expect(mockRes.status).not.toHaveBeenCalled();
       expect(mockRes.json).not.toHaveBeenCalled();
+    });
+
+    it("should throw 401 if user isn't present in the request object", async () => {
+      mockReq = {};
+
+      await userController.deleteCurrentUser(
+        mockReq as Request,
+        mockRes as Response,
+        mockNext
+      );
+
+      expect(mockUserService.deleteUser).not.toHaveBeenCalled();
+      expect(mockNext).toHaveBeenCalledWith(
+        new CritukError(
+          "User not authorized",
+          ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,
+          401
+        )
+      );
     });
   });
 
@@ -242,6 +283,25 @@ describe("UserController", () => {
       expect(mockNext).toHaveBeenCalledWith(error);
       expect(mockRes.status).not.toHaveBeenCalled();
       expect(mockRes.json).not.toHaveBeenCalled();
+    });
+
+    it("should throw 401 if user isn't present in the request object", async () => {
+      mockReq = {};
+
+      await userController.updateCurrentUser(
+        mockReq as Request,
+        mockRes as Response,
+        mockNext
+      );
+
+      expect(mockUserService.updateUser).not.toHaveBeenCalled();
+      expect(mockNext).toHaveBeenCalledWith(
+        new CritukError(
+          "User not authorized",
+          ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,
+          401
+        )
+      );
     });
   });
 
@@ -374,7 +434,6 @@ describe("UserController", () => {
       expect(mockRes.status).toHaveBeenCalledWith(200);
       expect(mockRes.json).toHaveBeenCalledWith({
         status: 200,
-        message: "Profile image uploaded successfuly.",
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -416,6 +475,30 @@ describe("UserController", () => {
       expect(mockNext).toHaveBeenCalledWith(error);
       expect(mockRes.status).not.toHaveBeenCalled();
       expect(mockRes.json).not.toHaveBeenCalled();
+    });
+
+    it("should throw 401 if user isn't present in the request object", async () => {
+      mockReq = {
+        file: {
+          buffer: Buffer.from("file content"),
+          mimetype: "image/jpeg",
+        } as Express.Multer.File,
+      };
+
+      await userController.uploadProfileImage(
+        mockReq as Request,
+        mockRes as Response,
+        mockNext
+      );
+
+      expect(mockUserService.uploadProfileImage).not.toHaveBeenCalled();
+      expect(mockNext).toHaveBeenCalledWith(
+        new CritukError(
+          "User not authorized",
+          ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,
+          401
+        )
+      );
     });
   });
 });
