@@ -9,9 +9,9 @@ import {
 } from "../middleware";
 import { userSchema } from "../schema";
 
+const router = Router();
 const userController = new UserController();
 const authMiddleware = new AuthMiddleware();
-const router = Router();
 
 // /users?email=
 // /users?username=
