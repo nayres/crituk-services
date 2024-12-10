@@ -3,7 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
-import { errorMiddleware } from "@org/errors";
+import { errorMiddleware } from "@org/middleware";
 import { userRoutes } from "./routes";
 
 const envFilePath = path.resolve(

@@ -1,1 +1,1 @@
-export { apiClient } from "./apiClient";
+export { userServiceClient } from "./userServiceClient";

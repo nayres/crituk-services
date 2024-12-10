@@ -1,13 +1,29 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import axios from "axios";
-import { AuthService } from "../services";
+import { handleResponse } from "@org/response";
 import { CritukError, ErrorCodes } from "@org/errors";
+import { AuthService } from "../services";
 
 export class AuthController {
-  authService: AuthService;
-  constructor(authService = new AuthService()) {
-    this.authService = authService;
-  }
+  constructor(private readonly authService: AuthService) {}
+
+  issueToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { client_id, client_secret } = req.body;
+      const token = await this.authService.issueToken(client_id, client_secret);
+      return handleResponse(res, { status: 200, success: true, data: token });
+    } catch (error) {
+      res
+        .status(401)
+        .json(
+          new CritukError(
+            "An unexpected error occured issuing token",
+            ErrorCodes.AUTH.UNEXPECTED_ERROR,
+            401
+          )
+        );
+    }
+  };
 
   login = async (req: Request, res: Response) => {
     try {
@@ -20,10 +36,11 @@ export class AuthController {
         maxAge: 3600000,
         sameSite: "strict",
       });
-
-      res
-        .status(200)
-        .json({ success: true, message: "Logged in successfully.", token });
+      return handleResponse(res, {
+        status: 200,
+        success: true,
+        data: { token },
+      });
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
         console.error("Error from user service:", error.response?.data);
@@ -31,6 +48,7 @@ export class AuthController {
           .status(error.response?.status || 500)
           .json(error.response?.data || error.message);
       } else {
+        console.error(error.stack);
         console.error("An unexpected error occured during login");
         res
           .status(401)
@@ -49,7 +67,11 @@ export class AuthController {
     try {
       const userData = req.body;
       const user = await this.authService.registerUser(userData);
-      res.status(201).json(user.data);
+      return handleResponse(res, {
+        status: 201,
+        success: true,
+        data: { user: user.data },
+      });
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
         console.error("Error from user service:", error.response?.data);

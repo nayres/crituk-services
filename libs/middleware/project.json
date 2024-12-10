@@ -1,0 +1,19 @@
+{
+  "name": "middleware",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/middleware/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/middleware",
+        "main": "libs/middleware/src/index.ts",
+        "tsConfig": "libs/middleware/tsconfig.lib.json",
+        "assets": ["libs/middleware/*.md"]
+      }
+    }
+  }
+}

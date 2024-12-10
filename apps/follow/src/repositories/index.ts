@@ -1,0 +1,1 @@
+export { followRepository } from "./followRepository";

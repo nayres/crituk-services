@@ -1,4 +1,5 @@
 import { CritukError, ErrorCodes } from "@org/errors";
+import { error } from "console";
 import { Request, Response, NextFunction } from "express";
 import multer, { FileFilterCallback, MulterError } from "multer";
 import path from "path";
@@ -60,11 +61,12 @@ export const uploadErrorHandler = (
     }
   }
 
+  console.error(err);
   return res
     .status(500)
     .json(
       new CritukError(
-        "An unexpected error occurred",
+        "An unexpected error occurred while uploading profile image.",
         ErrorCodes.SERVICE.UNEXPECTED_ERROR,
         500
       )
