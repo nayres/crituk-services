@@ -17,7 +17,10 @@
     "baseUrl": ".",
     "paths": {
       "@org/auth/*": ["apps/auth/src/*"],
+      "@org/clients": ["libs/clients/src/index.ts"],
       "@org/errors": ["libs/errors/src/index.ts"],
+      "@org/middleware": ["libs/middleware/src/index.ts"],
+      "@org/response": ["libs/response/src/index.ts"],
       "@org/result": ["libs/result/src/index.ts"],
       "@org/utils": ["libs/utils/src/index.ts"]
     },

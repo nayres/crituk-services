@@ -1,7 +1,12 @@
 import { Router } from "express";
+import {
+  createDocumentClient,
+  createDynamoDBClient,
+  createS3Client,
+} from "@org/clients";
+import { authMiddleware } from "@org/middleware";
 import { UserController } from "../controllers";
 import {
-  authMiddleware,
   validateRequest,
   profileImageUpload,
   uploadErrorHandler,
@@ -9,11 +14,14 @@ import {
 } from "../middleware";
 import { userSchema } from "../schema";
 import { UserService } from "../services";
-import { dynamoClient, s3Client } from "../utils";
 import { UserRepository } from "../repositories";
 
 const router = Router();
-const userRepository = new UserRepository(dynamoClient, s3Client);
+const dynamoClient = createDynamoDBClient();
+const documentClient = createDocumentClient(dynamoClient);
+const s3Client = createS3Client();
+
+const userRepository = new UserRepository(documentClient, s3Client);
 const userService = new UserService(userRepository);
 const userController = new UserController(userService);
 

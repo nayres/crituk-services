@@ -1,15 +1,12 @@
 import { UserService } from "../services";
+import { handleResponse } from "@org/response";
 import { ErrorCodes, handleError } from "@org/errors";
-import { HttpRequest, HttpResponse } from "../types";
+import { HttpRequest, HttpResponse, NextFunction } from "../types";
 
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  private handleResponse = (res: HttpResponse, status: number, data: any) => {
-    return res.status(status).json(data);
-  };
-
-  private ensureAuthenticated = (req: HttpRequest, next: Function) => {
+  private ensureAuthenticated = (req: HttpRequest, next: NextFunction) => {
     if (!req?.user?.id) {
       throw handleError(
         "User not authorized",
@@ -27,24 +24,33 @@ export class UserController {
    *
    * @param {HttpRequest} req - The HTTP request object.
    * @param {HttpResponse} res - The HTTP response object.
-   * @param {Function} next - The next middleware function.
+   * @param {NextFunction} next - The next middleware NextFunction.
    *
    * @returns {Promise<void>}
    */
-  getUser = async (req: HttpRequest, res: HttpResponse, next: Function) => {
+  getUser = async (req: HttpRequest, res: HttpResponse, next: NextFunction) => {
     try {
       const { email, username } = req.query;
 
       if (email) {
         const user = await this.userService.getUserByEmail(email as string);
-        return this.handleResponse(res, 200, { status: 200, user });
+        return handleResponse(res, {
+          status: 200,
+          success: true,
+          data: { user },
+        });
       }
 
       if (username) {
         const user = await this.userService.getUserByUsername(
           username as string
         );
-        return this.handleResponse(res, 200, { status: 200, user });
+
+        return handleResponse(res, {
+          status: 200,
+          success: true,
+          data: { user },
+        });
       }
     } catch (error) {
       next(error);
@@ -58,14 +64,22 @@ export class UserController {
    *
    * @param {HttpRequest} req - The HTTP request object.
    * @param {HttpResponse} res - The HTTP response object.
-   * @param {Function} next - The next middleware function.
+   * @param {NextFunction} next - The next middleware NextFunction.
    *
    * @returns {Promise<void>}
    */
-  createUser = async (req: HttpRequest, res: HttpResponse, next: Function) => {
+  createUser = async (
+    req: HttpRequest,
+    res: HttpResponse,
+    next: NextFunction
+  ) => {
     try {
-      const newUser = await this.userService.createUser(req.body);
-      return this.handleResponse(res, 201, { status: 201, user: newUser });
+      const user = await this.userService.createUser(req.body);
+      return handleResponse(res, {
+        status: 201,
+        success: true,
+        data: { user },
+      });
     } catch (error) {
       next(error);
     }
@@ -78,19 +92,23 @@ export class UserController {
    *
    * @param {HttpRequest} req - The HTTP request object.
    * @param {HttpResponse} res - The HTTP response object.
-   * @param {Function} next - The next middleware function.
+   * @param {NextFunction} next - The next middleware NextFunction.
    *
    * @returns {Promise<void>}
    */
   getCurrentUser = async (
     req: HttpRequest,
     res: HttpResponse,
-    next: Function
+    next: NextFunction
   ) => {
     try {
       const userId = this.ensureAuthenticated(req, next);
       const user = await this.userService.getUserById(userId);
-      return this.handleResponse(res, 200, { status: 200, user });
+      return handleResponse(res, {
+        status: 200,
+        success: true,
+        data: { account: user },
+      });
     } catch (error) {
       next(error);
     }
@@ -103,19 +121,19 @@ export class UserController {
    *
    * @param {HttpRequest} req - The HTTP request object.
    * @param {HttpResponse} res - The HTTP response object.
-   * @param {Function} next - The next middleware function.
+   * @param {NextFunction} next - The next middleware NextFunction.
    *
    * @returns {Promise<void>}
    */
   deleteCurrentUser = async (
     req: HttpRequest,
     res: HttpResponse,
-    next: Function
+    next: NextFunction
   ) => {
     try {
       const userId = this.ensureAuthenticated(req, next);
       await this.userService.deleteUser(userId);
-      return this.handleResponse(res, 204, { status: 204 });
+      return handleResponse(res, { status: 204, success: true });
     } catch (error) {
       next(error);
     }
@@ -128,19 +146,19 @@ export class UserController {
    *
    * @param {HttpRequest} req - The HTTP request object.
    * @param {HttpResponse} res - The HTTP response object.
-   * @param {Function} next - The next middleware function.
+   * @param {NextFunction} next - The next middleware NextFunction.
    *
    * @returns {Promise<void>}
    */
   updateCurrentUser = async (
     req: HttpRequest,
     res: HttpResponse,
-    next: Function
+    next: NextFunction
   ) => {
     try {
       const userId = this.ensureAuthenticated(req, next);
       await this.userService.updateUser(userId, req.body);
-      return this.handleResponse(res, 201, { status: 201 });
+      return handleResponse(res, { status: 201, success: true });
     } catch (error) {
       next(error);
     }
@@ -153,14 +171,14 @@ export class UserController {
    *
    * @param {HttpRequest} req - The HTTP request object.
    * @param {HttpResponse} res - The HTTP response object.
-   * @param {Function} next - The next middleware function.
+   * @param {NextFunction} next - The next middleware NextFunction.
    *
    * @returns {Promise<void>}
    */
   uploadProfileImage = async (
     req: HttpRequest,
     res: HttpResponse,
-    next: Function
+    next: NextFunction
   ) => {
     try {
       if (!req.file) {
@@ -175,7 +193,7 @@ export class UserController {
 
       const userId = this.ensureAuthenticated(req, next);
       await this.userService.uploadProfileImage(userId, req.file);
-      return this.handleResponse(res, 200, { status: 200 });
+      return handleResponse(res, { status: 200, success: true });
     } catch (error) {
       next(error);
     }
@@ -188,14 +206,22 @@ export class UserController {
    *
    * @param {HttpRequest} req - The HTTP request object.
    * @param {HttpResponse} res - The HTTP response object.
-   * @param {Function} next - The next middleware function.
+   * @param {NextFunction} next - The next middleware NextFunction.
    *
    * @returns {Promise<void>}
    */
-  listUsers = async (req: HttpRequest, res: HttpResponse, next: Function) => {
+  listUsers = async (
+    req: HttpRequest,
+    res: HttpResponse,
+    next: NextFunction
+  ) => {
     try {
       const users = await this.userService.listUsers();
-      return this.handleResponse(res, 200, { status: 200, users });
+      return handleResponse(res, {
+        status: 200,
+        success: true,
+        data: { users },
+      });
     } catch (error) {
       next(error);
     }
@@ -208,19 +234,19 @@ export class UserController {
    *
    * @param {HttpRequest} req - The HTTP request object.
    * @param {HttpResponse} res - The HTTP response object.
-   * @param {Function} next - The next middleware function.
+   * @param {NextFunction} next - The next middleware NextFunction.
    *
    * @returns {Promise<void>}
    */
   deleteUserById = async (
     req: HttpRequest,
     res: HttpResponse,
-    next: Function
+    next: NextFunction
   ) => {
     try {
       const userId = req.params.id;
       await this.userService.deleteUser(userId);
-      return this.handleResponse(res, 204, { status: 204 });
+      return handleResponse(res, { status: 204, success: true });
     } catch (error) {
       next(error);
     }

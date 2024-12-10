@@ -4,7 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import { authRoutes } from "./routes";
-import { errorMiddleware } from "@org/errors";
+import { errorMiddleware } from "@org/middleware";
 
 const app = express();
 const envFilePath = path.resolve(
