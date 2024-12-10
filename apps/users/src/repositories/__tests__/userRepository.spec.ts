@@ -120,9 +120,6 @@ describe("UserRepository", () => {
         profile_image: null,
         bio: "",
         currently_watching: null,
-        follower_count: 0,
-        following_count: 0,
-        reviews: [],
       };
 
       mockDocClient.send.mockResolvedValue(undefined);
@@ -143,9 +140,6 @@ describe("UserRepository", () => {
         profile_image: null,
         bio: "",
         currently_watching: null,
-        follower_count: 0,
-        following_count: 0,
-        reviews: [],
       };
       const error = new Error("DynamoDB error");
       mockDocClient.send.mockRejectedValue(new Error("DynamoDB error"));
@@ -186,9 +180,6 @@ describe("UserRepository", () => {
         profile_image: null,
         bio: "",
         currently_watching: null,
-        follower_count: 0,
-        following_count: 0,
-        reviews: [],
       };
 
       mockDocClient.send.mockResolvedValue({ Attributes: newUser });
