@@ -235,9 +235,6 @@ export class UserService {
         profile_image: null,
         bio: "",
         currently_watching: null,
-        follower_count: 0,
-        following_count: 0,
-        reviews: [],
       };
 
       await this.userRepository.create(newUser);

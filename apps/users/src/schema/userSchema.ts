@@ -11,8 +11,5 @@ export const userSchema = Joi.object({
   username: Joi.string().min(3).max(20),
   profile_image: Joi.string(),
   bio: Joi.string().max(150),
-  following_count: Joi.number(),
-  follower_count: Joi.number(),
-  reviews: Joi.array(),
   currently_watching: Joi.string(),
 });

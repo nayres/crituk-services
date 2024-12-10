@@ -389,9 +389,6 @@ describe("UserService", () => {
         profile_image: null,
         bio: "",
         currently_watching: null,
-        follower_count: 0,
-        following_count: 0,
-        reviews: [],
       };
 
       mockFindOneBy.mockResolvedValueOnce({ Items: [] });
@@ -503,9 +500,6 @@ describe("UserService", () => {
         profile_image: null,
         bio: "",
         currently_watching: null,
-        follower_count: 0,
-        following_count: 0,
-        reviews: [],
       };
 
       const updatedUser = {
