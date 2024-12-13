@@ -6,7 +6,6 @@ export const followService = {
     try {
       return await followRepository.getAllFollowed(id);
     } catch (error: any) {
-      console.error(error.stack);
       if (!(error instanceof CritukError)) {
         throw handleError(
           "An unexpected error occurred while fetching followers.",
@@ -21,7 +20,7 @@ export const followService = {
   getFollowing: async (id: string) => {
     try {
       return await followRepository.getAllFollowing(id);
-    } catch (error) {
+    } catch (error: any) {
       if (!(error instanceof CritukError)) {
         throw handleError(
           "An unexpected error occurred while fetching following.",

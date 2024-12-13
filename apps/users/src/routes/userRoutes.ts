@@ -16,48 +16,61 @@ import { userSchema } from "../schema";
 import { UserService } from "../services";
 import { UserRepository } from "../repositories";
 
-const router = Router();
-const dynamoClient = createDynamoDBClient();
-const documentClient = createDocumentClient(dynamoClient);
-const s3Client = createS3Client();
+class UserRoutes {
+  public router: Router;
+  private userController: UserController;
 
-const userRepository = new UserRepository(documentClient, s3Client);
-const userService = new UserService(userRepository);
-const userController = new UserController(userService);
+  constructor() {
+    this.router = Router();
+    this.userController = this.initializeController();
+    this.initializeRoutes();
+  }
 
-// /users?email=
-// /users?username=
-router.get("/users", userController.getUser);
-router.post("/users", userController.createUser);
+  private initializeController(): UserController {
+    const dynamoClient = createDynamoDBClient();
+    const documentClient = createDocumentClient(dynamoClient);
+    const s3Client = createS3Client();
 
-/* User Account */
-router.get(
-  "/users/account",
-  authMiddleware.authenticate,
-  userController.getCurrentUser
-);
-router.delete(
-  "/users/account",
-  authMiddleware.authenticate,
-  userController.deleteCurrentUser
-);
-router.patch(
-  "/users/account",
-  authMiddleware.authenticate,
-  validateFilePresence,
-  validateRequest(userSchema),
-  userController.updateCurrentUser
-);
-router.put(
-  "/users/account/profile-image",
-  authMiddleware.authenticate,
-  profileImageUpload.single("profileImage"),
-  userController.uploadProfileImage,
-  uploadErrorHandler
-);
+    const userRepository = new UserRepository(documentClient, s3Client);
+    const userService = new UserService(userRepository);
+    return new UserController(userService);
+  }
 
-/* Admin */
-router.get("/users/admin", userController.listUsers);
-router.delete("/users/admin/:id", userController.deleteUserById);
+  private initializeRoutes(): void {
+    // Public routes
+    this.router.get("/users", this.userController.getUser);
+    this.router.post("/users", this.userController.createUser);
 
-export { router as userRoutes };
+    // User Account routes
+    this.router.get(
+      "/users/account",
+      authMiddleware.authenticate,
+      this.userController.getCurrentUser
+    );
+    this.router.delete(
+      "/users/account",
+      authMiddleware.authenticate,
+      this.userController.deleteCurrentUser
+    );
+    this.router.patch(
+      "/users/account",
+      authMiddleware.authenticate,
+      validateRequest(userSchema),
+      this.userController.updateCurrentUser
+    );
+    this.router.put(
+      "/users/account/profile-image",
+      authMiddleware.authenticate,
+      profileImageUpload.single("profile-image"),
+      validateFilePresence,
+      this.userController.uploadProfileImage,
+      uploadErrorHandler
+    );
+
+    // Admin routes
+    this.router.get("/users/admin", this.userController.listUsers);
+    this.router.delete("/users/admin/:id", this.userController.deleteUserById);
+  }
+}
+
+export const userRoutes = new UserRoutes().router;

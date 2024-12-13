@@ -48,7 +48,6 @@ export class AuthController {
           .status(error.response?.status || 500)
           .json(error.response?.data || error.message);
       } else {
-        console.error(error.stack);
         console.error("An unexpected error occured during login");
         res
           .status(401)

@@ -30,6 +30,14 @@
         "codeCoverage": true,
         "coverageReporters": ["html", "text", "lcov"]
       }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/users/Dockerfile . -t users"
+    },
+    "docker-run": {
+      "dependsOn": ["docker-build"],
+      "command": "docker run -p 3000:3000 --env-file .env.development users"
     }
   }
 }

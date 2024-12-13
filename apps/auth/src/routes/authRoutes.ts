@@ -3,15 +3,28 @@ import { AuthController } from "../controllers";
 import { userServiceClient as UserServiceClient } from "../repositories";
 import { AuthService } from "../services";
 
-const userServiceClient = UserServiceClient;
-const authService = new AuthService(userServiceClient);
-const authController = new AuthController(authService);
+class AuthRoutes {
+  public router: Router;
+  private authController: AuthController;
 
-const router = Router();
+  constructor() {
+    this.router = Router();
+    this.authController = this.initializeController();
+    this.initializeRoutes();
+  }
 
-router.post("/auth/login", authController.login);
-router.post("/auth/register", authController.register);
-router.get("/auth/validate", authController.validate);
-router.post("/auth/token", authController.issueToken);
+  private initializeController(): AuthController {
+    const userServiceClient = UserServiceClient;
+    const authService = new AuthService(userServiceClient);
+    return new AuthController(authService);
+  }
 
-export { router };
+  private initializeRoutes(): void {
+    this.router.post("/auth/login", this.authController.login);
+    this.router.post("/auth/register", this.authController.register);
+    this.router.get("/auth/validate", this.authController.validate);
+    this.router.post("/auth/token", this.authController.issueToken);
+  }
+}
+
+export const authRoutes = new AuthRoutes().router;

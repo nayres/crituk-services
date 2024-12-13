@@ -32,7 +32,6 @@ export class AuthService {
         );
       }
     } catch (error: any) {
-      console.error(error.stack);
       throw new CritukError(
         "Invalid client credentials",
         ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,

@@ -10,7 +10,8 @@
     "test:auth": "nx run auth:test",
     "test:users": "nx run users:test",
     "build:libs:errors": "nx build errors",
-    "test:libs:errors": "nx test errors"
+    "test:libs:errors": "nx test errors",
+    "docker:local": "docker compose --env-file .env.docker.development up --build"
   },
   "private": true,
   "dependencies": {
