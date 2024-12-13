@@ -51,10 +51,9 @@ export const authMiddleware = {
           Authorization: authHeader,
         },
       });
-
       req.user = response.data;
       return next();
-    } catch (error) {
+    } catch (error: any) {
       if (axios.isAxiosError(error)) {
         if (error.response) {
           return res

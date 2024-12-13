@@ -61,7 +61,6 @@ export const uploadErrorHandler = (
     }
   }
 
-  console.error(err);
   return res
     .status(500)
     .json(

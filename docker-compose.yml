@@ -1,0 +1,68 @@
+version: "3.8"
+services:
+  users:
+    build:
+      context: .
+      dockerfile: ./apps/users/Dockerfile.dev
+      args:
+        AUTH_SERVICE_API_URL: ${AUTH_SERVICE_API_URL}
+        AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+        AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+        AWS_REGION: ${AWS_REGION}
+        AWS_PROFILE_IMAGE_S3_NAME: ${AWS_PROFILE_IMAGE_S3_NAME}
+    ports:
+      - "3000:3000"
+    environment:
+      AUTH_SERVICE_API_URL: ${AUTH_SERVICE_API_URL}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_PROFILE_IMAGE_S3_NAME: ${AWS_PROFILE_IMAGE_S3_NAME}
+    depends_on:
+      - auth
+    networks:
+      - app-network
+
+  auth:
+    build:
+      context: .
+      dockerfile: ./apps/auth/Dockerfile.dev
+      args:
+        USER_SERVICE_API_URL: ${USER_SERVICE_API_URL}
+        AUTH_SECRET_KEY: ${AUTH_SECRET_KEY}
+    ports:
+      - "3001:3001"
+    environment:
+      USER_SERVICE_API_URL: ${USER_SERVICE_API_URL}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY}
+    networks:
+      - app-network
+
+  follow:
+    build:
+      context: .
+      dockerfile: ./apps/follow/Dockerfile.dev
+      args:
+        AUTH_SERVICE_API_URL: ${AUTH_SERVICE_API_URL}
+        AUTH_SECRET_KEY: ${AUTH_SECRET_KEY}
+        AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+        AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+        AWS_REGION: ${AWS_REGION}
+        AWS_PROFILE_IMAGE_S3_NAME: ${AWS_PROFILE_IMAGE_S3_NAME}
+    ports:
+      - "3002:3002"
+    environment:
+      AUTH_SERVICE_API_URL: ${AUTH_SERVICE_API_URL}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_PROFILE_IMAGE_S3_NAME: ${AWS_PROFILE_IMAGE_S3_NAME}
+    depends_on:
+      - auth
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

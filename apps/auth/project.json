@@ -21,6 +21,14 @@
           "buildTarget": "auth:build:production"
         }
       }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/auth/Dockerfile . -t auth"
+    },
+    "docker-run": {
+      "dependsOn": ["docker-build"],
+      "command": "docker run -p 3001:3001 --env-file .env.development auth"
     }
   }
 }

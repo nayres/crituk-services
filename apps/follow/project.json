@@ -21,6 +21,14 @@
           "buildTarget": "follow:build:production"
         }
       }
+    },
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f apps/follow/Dockerfile . -t follow"
+    },
+    "docker-run": {
+      "dependsOn": ["docker-build"],
+      "command": "docker run -p 3002:3002 --env-file .env.development follow"
     }
   }
 }

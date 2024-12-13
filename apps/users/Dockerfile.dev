@@ -1,0 +1,13 @@
+FROM node:18-alpine
+
+ENV NODE_ENV=development
+
+WORKDIR /app
+
+COPY dist/apps/users ./
+
+RUN npm ci
+
+EXPOSE 3001
+
+CMD ["node", "main.js"]
