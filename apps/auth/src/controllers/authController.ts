@@ -13,33 +13,49 @@ export class AuthController {
       const token = await this.authService.issueToken(client_id, client_secret);
       return handleResponse(res, { status: 200, success: true, data: token });
     } catch (error) {
-      res
-        .status(401)
-        .json(
-          new CritukError(
-            "An unexpected error occured issuing token",
-            ErrorCodes.AUTH.UNEXPECTED_ERROR,
-            401
-          )
-        );
+      next(error);
     }
   };
 
-  login = async (req: Request, res: Response) => {
-    try {
-      const { email, password } = req.body;
-      const token = await this.authService.authenticateUser(email, password);
+  logout = async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.crtk_refresh_token;
 
-      res.cookie("showtell_token", token, {
+    if (!refreshToken)
+      return res.status(400).json({ message: "No refresh token provided" });
+
+    try {
+      this.authService.validateToken(
+        refreshToken,
+        process.env.AUTH_REFRESH_SECRET || ""
+      );
+
+      return handleResponse(res.clearCookie("crtk_refresh_token"), {
+        status: 200,
+        success: true,
+        message: "Logged out successfully",
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  login = async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } = req.body;
+    try {
+      const { accessToken, refreshToken } =
+        await this.authService.authenticateUser(email, password);
+
+      res.cookie("crtk_refresh_token", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 3600000,
         sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
+
       return handleResponse(res, {
         status: 200,
         success: true,
-        data: { token },
+        data: { accessToken },
       });
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
@@ -48,21 +64,12 @@ export class AuthController {
           .status(error.response?.status || 500)
           .json(error.response?.data || error.message);
       } else {
-        console.error("An unexpected error occured during login");
-        res
-          .status(401)
-          .json(
-            new CritukError(
-              "An unexpected error occured during login",
-              ErrorCodes.AUTH.UNEXPECTED_ERROR,
-              401
-            )
-          );
+        next(error);
       }
     }
   };
 
-  register = async (req: Request, res: Response) => {
+  register = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData = req.body;
       const user = await this.authService.registerUser(userData);
@@ -84,40 +91,57 @@ export class AuthController {
             )
           );
       } else {
-        console.error("An unexpected error occured registering user");
-        res
-          .status(401)
-          .json(
-            new CritukError(
-              "An unexpected error occured registering user",
-              ErrorCodes.AUTH.UNEXPECTED_ERROR,
-              401
-            )
-          );
+        next(error);
       }
     }
   };
 
-  validate = async (req: Request, res: Response) => {
+  issueRefreshToken = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const existingRefreshToken = req.cookies.crtk_refresh_token;
+    if (!existingRefreshToken) {
+      return res.status(403).json({ message: "Refresh token required" });
+    }
+
+    try {
+      const { accessToken, refreshToken } =
+        await this.authService.issueRefreshToken(existingRefreshToken);
+
+      return handleResponse(
+        res.cookie("crtk_refresh_token", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+        }),
+        {
+          status: 200,
+          success: true,
+          data: { accessToken },
+          message: "Successfully issued refresh token",
+        }
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  validate = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization?.split(" ")[1];
       if (typeof token === "undefined") {
         res.status(400).json({ message: "No auth token provided." });
       } else {
-        const decoded = await this.authService.validateToken(token);
+        const decoded = await this.authService.validateToken(
+          token,
+          process.env.AUTH_SECRET_KEY || ""
+        );
         res.json(decoded);
       }
-    } catch (error: any) {
-      console.error("An unexpected error occured during login");
-      res
-        .status(401)
-        .json(
-          new CritukError(
-            "An unexpected error occured during login",
-            ErrorCodes.AUTH.UNEXPECTED_ERROR,
-            401
-          )
-        );
+    } catch (error) {
+      next(error);
     }
   };
 }
