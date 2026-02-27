@@ -47,41 +47,33 @@ export class AuthService {
       { id, email, first_name, last_name, user_name },
       process.env.AUTH_REFRESH_SECRET || "",
       {
-        expiresIn: process.env.AUTH_ACCESS_TOKEN_EXPIRY,
+        expiresIn: process.env.AUTH_REFRESH_TOKEN_EXPIRY,
       }
     );
   };
 
   public issueToken = async (clientId: string, clientSecret: string) => {
-    try {
-      if (validClients[clientId] && validClients[clientId] === clientSecret) {
-        const token = jwt.sign(
-          { clientId },
-          process.env.AUTH_SECRET_KEY || "",
-          {
-            expiresIn: "1h",
-          }
-        );
-
-        return {
-          access_token: token,
-          token_type: "Bearer",
-          expires_in: 3600,
-        };
-      } else {
-        throw new CritukError(
-          "Invalid or missing credentials",
-          ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,
-          401
-        );
-      }
-    } catch (error: any) {
+    if (!validClients[clientId] || validClients[clientId] !== clientSecret) {
       throw new CritukError(
-        "Invalid client credentials",
+        "Invalid or missing credentials",
         ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,
         401
       );
     }
+
+    const token = jwt.sign(
+      { clientId },
+      process.env.AUTH_SECRET_KEY || "",
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    return {
+      access_token: token,
+      token_type: "Bearer",
+      expires_in: 3600,
+    };
   };
 
   public registerUser = async (userData: Partial<IUser>) => {
@@ -139,8 +131,11 @@ export class AuthService {
         refreshToken,
       };
     } catch (error) {
+      if (error instanceof CritukError) {
+        throw error;
+      }
       throw new CritukError(
-        "An unexpected error occured while authenticating user.",
+        "An unexpected error occurred while authenticating user.",
         ErrorCodes.AUTH.UNEXPECTED_ERROR,
         500
       );
@@ -156,7 +151,7 @@ export class AuthService {
 
       if (!payload) {
         throw new CritukError(
-          "Unable to issue refresh token: No JWT payload", // TODO: better error
+          "Unable to issue refresh token: invalid or missing token payload.",
           ErrorCodes.AUTH.INSUFFICIENT_PERMISSIONS,
           403
         );
@@ -185,8 +180,11 @@ export class AuthService {
         accessToken,
       };
     } catch (error) {
+      if (error instanceof CritukError) {
+        throw error;
+      }
       throw new CritukError(
-        "An unexpected error occured while issueing a refresh token.",
+        "An unexpected error occurred while issuing a refresh token.",
         ErrorCodes.AUTH.UNEXPECTED_ERROR,
         500
       );

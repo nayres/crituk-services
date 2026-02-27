@@ -20,8 +20,15 @@ export class AuthController {
   logout = async (req: Request, res: Response, next: NextFunction) => {
     const refreshToken = req.cookies.crtk_refresh_token;
 
-    if (!refreshToken)
-      return res.status(400).json({ message: "No refresh token provided" });
+    if (!refreshToken) {
+      return next(
+        new CritukError(
+          "No refresh token provided",
+          ErrorCodes.AUTH.INSUFFICIENT_CREDENTIALS,
+          400
+        )
+      );
+    }
 
     try {
       this.authService.validateToken(
@@ -57,7 +64,7 @@ export class AuthController {
         success: true,
         data: { accessToken },
       });
-    } catch (error: any) {
+    } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error from user service:", error.response?.data);
         res
@@ -78,7 +85,7 @@ export class AuthController {
         success: true,
         data: { user: user.data },
       });
-    } catch (error: any) {
+    } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error from user service:", error.response?.data);
         res
@@ -103,7 +110,13 @@ export class AuthController {
   ) => {
     const existingRefreshToken = req.cookies.crtk_refresh_token;
     if (!existingRefreshToken) {
-      return res.status(403).json({ message: "Refresh token required" });
+      return next(
+        new CritukError(
+          "Refresh token required",
+          ErrorCodes.AUTH.INSUFFICIENT_CREDENTIALS,
+          403
+        )
+      );
     }
 
     try {
@@ -132,14 +145,19 @@ export class AuthController {
     try {
       const token = req.headers.authorization?.split(" ")[1];
       if (typeof token === "undefined") {
-        res.status(400).json({ message: "No auth token provided." });
-      } else {
-        const decoded = await this.authService.validateToken(
-          token,
-          process.env.AUTH_SECRET_KEY || ""
+        return next(
+          new CritukError(
+            "No auth token provided.",
+            ErrorCodes.AUTH.INSUFFICIENT_CREDENTIALS,
+            400
+          )
         );
-        res.json(decoded);
       }
+      const decoded = await this.authService.validateToken(
+        token,
+        process.env.AUTH_SECRET_KEY || ""
+      );
+      res.json(decoded);
     } catch (error) {
       next(error);
     }

@@ -158,7 +158,7 @@ export class UserController {
     try {
       const userId = this.ensureAuthenticated(req, next);
       await this.userService.updateUser(userId, req.body);
-      return handleResponse(res, { status: 201, success: true });
+      return handleResponse(res, { status: 200, success: true });
     } catch (error) {
       next(error);
     }

@@ -5,6 +5,7 @@ import {
   DeleteCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { createDynamoDBClient } from "@org/clients";
+import { CritukError, ErrorCodes } from "@org/errors";
 import { Relationship } from "../types";
 
 const TABLE_NAME = "Follow";
@@ -56,11 +57,16 @@ export const followRepository = {
       });
 
       return await docClient.send(command);
-    } catch (error: any) {
-      if (error.name === "ConditionalCheckFailedException") {
-        console.error("Follow relationship does not exist.");
-      } else {
-        console.error("Error deleting follow relationship:", error);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name === "ConditionalCheckFailedException"
+      ) {
+        throw new CritukError(
+          "Follow relationship does not exist.",
+          ErrorCodes.DB.CONDITION_CHECK_FAILURE,
+          404
+        );
       }
       throw error;
     }
