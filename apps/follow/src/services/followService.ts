@@ -5,7 +5,7 @@ export const followService = {
   getFollowed: async (id: string) => {
     try {
       return await followRepository.getAllFollowed(id);
-    } catch (error: any) {
+    } catch (error) {
       if (!(error instanceof CritukError)) {
         throw handleError(
           "An unexpected error occurred while fetching followers.",
@@ -20,7 +20,7 @@ export const followService = {
   getFollowing: async (id: string) => {
     try {
       return await followRepository.getAllFollowing(id);
-    } catch (error: any) {
+    } catch (error) {
       if (!(error instanceof CritukError)) {
         throw handleError(
           "An unexpected error occurred while fetching following.",
@@ -40,7 +40,7 @@ export const followService = {
         followed_at: new Date().toISOString(),
       };
       return await followRepository.createFollow(newRelationship);
-    } catch (error: any) {
+    } catch (error) {
       if (!(error instanceof CritukError)) {
         throw handleError(
           "An unexpected error occurred while following.",
@@ -55,8 +55,7 @@ export const followService = {
   unfollow: async (userFollowing: string, userFollowed: string) => {
     try {
       return await followRepository.deleteFollow(userFollowing, userFollowed);
-    } catch (error: any) {
-      console.error(error.stack);
+    } catch (error) {
       if (!(error instanceof CritukError)) {
         throw handleError(
           "An unexpected error occurred while unfollowing.",
